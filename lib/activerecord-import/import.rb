@@ -792,7 +792,13 @@ class ActiveRecord::Base
       pre_sql_statements = connection.pre_sql_statements( options )
       insert_sql = ['INSERT', pre_sql_statements, "INTO #{quoted_table_name} #{columns_sql} VALUES "]
       insert_sql = insert_sql.flatten.join(' ')
-      values_sql = values_sql_for_columns_and_attributes(columns, array_of_attributes)
+      values_sql = if options[:skip_type_casts]
+        # this is likely not SQLi safe, only use on trusted input
+        array_of_attributes.map { |arr| "(#{arr.map{|value| value.is_a?(Integer) ? value : "'#{value}'" }.join(',')})" }
+      else
+        values_sql_for_columns_and_attributes(columns, array_of_attributes)
+      end
+
 
       number_inserted = 0
       ids = []
