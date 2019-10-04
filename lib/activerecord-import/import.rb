@@ -794,7 +794,7 @@ class ActiveRecord::Base
       insert_sql = insert_sql.flatten.join(' ')
       values_sql = if options[:skip_type_casts]
         # this is likely not SQLi safe, only use on trusted input
-        array_of_attributes.map { |arr| "(#{arr.map{|value| value.is_a?(Integer) ? value : "'#{value}'" }.join(',')})" }
+        array_of_attributes.map { |arr| "(#{arr.map{|value| value.is_a?(Integer) ? value : "'#{ActiveRecord::Base.connection.quote_string(value.to_s)}'" }.join(',')})" }
       else
         values_sql_for_columns_and_attributes(columns, array_of_attributes)
       end
